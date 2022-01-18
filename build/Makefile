@@ -14,7 +14,6 @@ CC=g++
 LD=g++
 CFLAGS=-MMD -std=c++11 -Ofast -ffast-math -march=native # -ggdb -O0 -fno-inline
 CFLAGS+=-I../src/maths
-LDFLAGS= -lSDL2 -lX11
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
