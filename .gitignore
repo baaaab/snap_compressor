@@ -1,0 +1,9 @@
+*.d
+*.o
+
+*.roundedQuantisedDCT
+*.xz
+*.8t
+.cproject
+.project
+.settings/
