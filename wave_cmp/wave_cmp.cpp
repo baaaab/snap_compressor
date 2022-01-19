@@ -5,6 +5,7 @@
 #include <vector>
 #include <complex>
 #include <algorithm>
+#include <unistd.h>
 
 #include "../src/display/ASdlKeyPressHandler.h"
 #include "../src/display/CSdlDisplay.h"
@@ -95,9 +96,10 @@ int main(int argc, char** argv)
 
 	while (1)
 	{
+		printf("Segment; %u, byteOffset: %lu\n", keyPressHandler.segment, keyPressHandler.segment * numSamples * 2ULL);
 		for(uint32_t i=0;i<2;i++)
 		{
-			fseek(fh[i], keyPressHandler.segment * numSamples * 2, SEEK_SET);
+			fseek(fh[i], keyPressHandler.segment * numSamples * 2ULL, SEEK_SET);
 			fread(samples[i].data(), 2, numSamples*20, fh[i]);
 		}
 
@@ -132,6 +134,7 @@ int main(int argc, char** argv)
 
 		while (!keyPressHandler.doRedraw)
 		{
+			usleep(40000);
 			display.handleEvents();
 		}
 		keyPressHandler.doRedraw = false;
@@ -209,7 +212,7 @@ void drawFft(CSdlDisplay* display, uint32_t xOffset, uint32_t yOffset, const std
 	}
 
 	float max = 5;//*std::max_element(magnitudes.begin(), magnitudes.end());
-	printf("max: %f, numAverages = %u\n", max, numAverages);
+	//printf("max: %f, numAverages = %u\n", max, numAverages);
 
 	uint32_t prevX = xOffset, prevY = yOffset + 128;
 	for(uint32_t i=0;i<fftSize;i++)
