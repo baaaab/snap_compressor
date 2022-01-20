@@ -21,18 +21,9 @@ CSdlDisplay::CSdlDisplay(uint32_t width, uint32_t height) :
 		fprintf(stderr, "Could not initialise SDL: %s\n", SDL_GetError());
 	}
 
-	_screen = SDL_CreateWindow("wave_cmp",
-	                          SDL_WINDOWPOS_UNDEFINED,
-	                          SDL_WINDOWPOS_UNDEFINED,
-	                          _windowWidth, _windowHeight,
-	                          0);
-
+	_screen = SDL_CreateWindow("wave_cmp", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, _windowWidth, _windowHeight, 0);
 	_renderer = SDL_CreateRenderer(_screen, -1, 0);
-
-	_texture = SDL_CreateTexture(_renderer,
-	                               SDL_PIXELFORMAT_ARGB8888,
-	                               SDL_TEXTUREACCESS_STREAMING,
-	                               _windowWidth, _windowHeight);
+	_texture = SDL_CreateTexture(_renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, _windowWidth, _windowHeight);
 
 	_pixels = new uint8_t[_windowWidth * _windowHeight * 4];
 }
@@ -57,8 +48,8 @@ uint32_t CSdlDisplay::getHeight() const
 
 void CSdlDisplay::setPixel(int x, int y, uint32_t pixel)
 {
-	uint8_t *target_pixel = (uint8_t *) _pixels + y * _windowWidth * 4 + x * 4;
-	*(uint32_t *) target_pixel = pixel;
+	uint8_t* target_pixel = (uint8_t*) _pixels + y * _windowWidth * 4 + x * 4;
+	*(uint32_t*) target_pixel = pixel;
 }
 
 uint32_t CSdlDisplay::setColour(uint8_t r, uint8_t g, uint8_t b)
@@ -167,7 +158,7 @@ void CSdlDisplay::handleEvents()
 			case SDL_KEYDOWN:
 			{
 				std::lock_guard<std::mutex> am(_keyHandlersMutex);
-				for(ASdlKeyPressHandler* handler : _keyHandlers)
+				for (ASdlKeyPressHandler* handler : _keyHandlers)
 				{
 					handler->handleKeyPress(_event.key.keysym.sym);
 				}

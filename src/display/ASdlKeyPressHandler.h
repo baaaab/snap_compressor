@@ -9,7 +9,7 @@ public:
 	ASdlKeyPressHandler();
 	virtual ~ASdlKeyPressHandler();
 
-	virtual void        handleKeyPress(SDL_Keycode) = 0;
+	virtual void handleKeyPress(SDL_Keycode) = 0;
 
 };
 

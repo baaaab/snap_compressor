@@ -33,14 +33,14 @@ public:
 
 private:
 
-	SDL_Window* _screen;
+	SDL_Window*   _screen;
 	SDL_Renderer* _renderer;
-	SDL_Texture* _texture;
-	uint8_t*     _pixels;
+	SDL_Texture*  _texture;
+	uint8_t*      _pixels;
 
-	SDL_Event _event;
-	uint32_t _windowWidth;
-	uint32_t _windowHeight;
+	SDL_Event     _event;
+	uint32_t      _windowWidth;
+	uint32_t      _windowHeight;
 
 	std::vector<ASdlKeyPressHandler*> _keyHandlers;
 	std::mutex                        _keyHandlersMutex;

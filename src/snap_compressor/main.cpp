@@ -39,7 +39,7 @@ int main(int argc, char** argv)
 
 	if (strcmp(argv[1], "encode") == 0)
 	{
-		if(argc != 6)
+		if (argc != 6)
 		{
 			usage(argv[0]);
 		}
@@ -53,7 +53,7 @@ int main(int argc, char** argv)
 	}
 	else if (strcmp(argv[1], "decode") == 0)
 	{
-		if(argc != 4)
+		if (argc != 4)
 		{
 			usage(argv[0]);
 		}
@@ -70,7 +70,6 @@ int main(int argc, char** argv)
 
 void encode(const char* inputFileName, uint32_t blockSize, float quantisationFactor, uint32_t binsToKeep)
 {
-
 	FILE* fh = fopen(inputFileName, "r");
 	if (!fh)
 	{
@@ -91,8 +90,6 @@ void encode(const char* inputFileName, uint32_t blockSize, float quantisationFac
 		stat(inputFileName, &st);
 		fileSizeBytes = st.st_size;
 	}
-
-
 
 	CXZCompress compressor;
 	CDiscreteCosineTransform dct(blockSize);
@@ -134,11 +131,11 @@ void encode(const char* inputFileName, uint32_t blockSize, float quantisationFac
 
 			for (uint32_t i = 0; i < blockSize; i++)
 			{
-				if(std::abs(transformed[i].real()) * quantisationFactor > 127)
+				if (std::abs(transformed[i].real()) * quantisationFactor > 127)
 				{
 					fprintf(stderr, "Overflow detected, set quantisation to: %f %%\n", quantisationFactor * 12700.0f / (quantisationFactor * std::abs(transformed[i].real())));
 				}
-				if(std::abs(transformed[i].imag()) * quantisationFactor > 127)
+				if (std::abs(transformed[i].imag()) * quantisationFactor > 127)
 				{
 					fprintf(stderr, "Overflow detected, set quantisation to: %f %%\n", quantisationFactor * 12700.0f / (quantisationFactor * std::abs(transformed[i].imag())));
 				}
@@ -154,17 +151,17 @@ void encode(const char* inputFileName, uint32_t blockSize, float quantisationFac
 			compressor.addBytes(reinterpret_cast<uint8_t*>(transformedRoundedQuantised.data()), 2 * binsToKeep);
 			compressor.writeAndEmptyBuffer(roundedQuantisedDct);
 
-			if(time(NULL) != lastPrint)
+			if (time(NULL) != lastPrint)
 			{
 				lastPrint = time(NULL);
 				float megaBytesProcessed = bytesProcessed / 1000000.0f;
 				float megaBytesOutput = ftell(roundedQuantisedDct) / 1000000.0f;
-				float ratioFromCuttingHighFreqs = binsToKeep / (float)blockSize;
+				float ratioFromCuttingHighFreqs = binsToKeep / (float) blockSize;
 				float xzRatio = compressor.getRatio();
 				float overallRatio = ratioFromCuttingHighFreqs * xzRatio;
-				float rate = megaBytesProcessed / (float)(lastPrint - start);
+				float rate = megaBytesProcessed / (float) (lastPrint - start);
 				float fileSizeMegaBytes = fileSizeBytes / 1000000.0f;
-				float eta = (fileSizeMegaBytes - megaBytesProcessed)/ rate;
+				float eta = (fileSizeMegaBytes - megaBytesProcessed) / rate;
 				printf("Encoding: %3.1f / %3.1f MB processed, compressed size: %3.1f MB, ratio: %2.2f%% (%2.2f%% trimming, %2.2f%% xz), rate = %2.2f MB/s, eta: %3.0f s\n", megaBytesProcessed, fileSizeMegaBytes, megaBytesOutput, overallRatio * 100.0f, ratioFromCuttingHighFreqs * 100.0f, xzRatio * 100.0f, rate, eta);
 			}
 
@@ -182,7 +179,7 @@ void encode(const char* inputFileName, uint32_t blockSize, float quantisationFac
 	}
 
 	bool done = false;
-	while(!done)
+	while (!done)
 	{
 		done = compressor.finish();
 		compressor.writeAndEmptyBuffer(roundedQuantisedDct);
@@ -222,32 +219,32 @@ void decode(const char* inputFileName, const char* outputFileName)
 	//read headers (magic, blockSize, quantisationFactor, binsToKeep) all 4 bytes, LE
 	{
 		fread(fileMagic, 1, 4, inputFh);
-		if(memcmp(fileMagic, magic, 4) != 0)
+		if (memcmp(fileMagic, magic, 4) != 0)
 		{
 			fprintf(stderr, "Invalid file header\n");
 			exit(1);
 		}
 
 		fread(&blockSize, 4, 1, inputFh);
-		if(blockSize == 0)
+		if (blockSize == 0)
 		{
 			fprintf(stderr, "block size of zero is invalid\n");
 			exit(1);
 		}
 
 		fread(&quantisationFactor, 4, 1, inputFh);
-		if(quantisationFactor == 0.0f)
+		if (quantisationFactor == 0.0f)
 		{
 			fprintf(stderr, "quantisationFactor of zero is invalid\n");
 			exit(1);
 		}
-		if(quantisationFactor > 1.0f)
+		if (quantisationFactor > 1.0f)
 		{
 			fprintf(stderr, "quantisationFactor above 1 is a bad idea\n");
 		}
 
 		fread(&binsToKeep, 4, 1, inputFh);
-		if(binsToKeep == 0 || binsToKeep > blockSize)
+		if (binsToKeep == 0 || binsToKeep > blockSize)
 		{
 			fprintf(stderr, "Invalid binsToKeep = %u, blockSize = %u\n", binsToKeep, blockSize);
 			exit(1);
@@ -294,17 +291,17 @@ void decode(const char* inputFileName, const char* outputFileName)
 				iBytes[i] = rounded[i];
 			}
 
-			if(time(NULL) != lastPrint)
+			if (time(NULL) != lastPrint)
 			{
 				lastPrint = time(NULL);
 				float megaBytesCompressed = decompressor.getInputByteCount() / 1000000.0f;
 				float megaBytesDecompressed = decompressor.getOutputByteCount() / 1000000.0f;
-				float ratioFromCuttingHighFreqs = binsToKeep / (float)blockSize;
+				float ratioFromCuttingHighFreqs = binsToKeep / (float) blockSize;
 				float xzRatio = megaBytesCompressed / megaBytesDecompressed;
 				float overallRatio = ratioFromCuttingHighFreqs * xzRatio;
-				float rate = megaBytesCompressed / (float)(lastPrint - start);
+				float rate = megaBytesCompressed / (float) (lastPrint - start);
 				float fileSizeMegaBytes = fileSizeBytes / 1000000.0f;
-				float eta = (fileSizeMegaBytes - megaBytesCompressed)/ rate;
+				float eta = (fileSizeMegaBytes - megaBytesCompressed) / rate;
 				printf("Decoding: %3.1f / %3.1f MB processed, decompressed size: %3.1f MB, ratio: %2.2f%% (%2.2f%% trimming, %2.2f%% xz), (input)rate = %2.2f MB/s, eta: %3.0f s\n", megaBytesCompressed, fileSizeMegaBytes, megaBytesDecompressed, overallRatio * 100.0f, ratioFromCuttingHighFreqs * 100.0f, xzRatio * 100.0f, rate, eta);
 			}
 

@@ -39,7 +39,7 @@ CDiscreteCosineTransform::~CDiscreteCosineTransform()
 	delete[] _cosLookupInv;
 }
 
-void CDiscreteCosineTransform::DCT(const std::vector<std::complex<float>> &data, std::vector<std::complex<float>> &destination)
+void CDiscreteCosineTransform::DCT(const std::vector<std::complex<float>>& data, std::vector<std::complex<float>>& destination)
 {
 	destination.resize(data.size());
 
@@ -57,7 +57,7 @@ void CDiscreteCosineTransform::DCT(const std::vector<std::complex<float>> &data,
 	destination[0] *= 1.0f / sqrtf(2);
 }
 
-void CDiscreteCosineTransform::IDCT(const std::vector<std::complex<float>> &data, std::vector<std::complex<float>> &destination)
+void CDiscreteCosineTransform::IDCT(const std::vector<std::complex<float>>& data, std::vector<std::complex<float>>& destination)
 {
 	destination.resize(data.size());
 
@@ -74,7 +74,7 @@ void CDiscreteCosineTransform::IDCT(const std::vector<std::complex<float>> &data
 	}
 }
 
-void CDiscreteCosineTransform::optDCT(const std::vector<std::complex<float>> &data, std::vector<std::complex<float>> &destination)
+void CDiscreteCosineTransform::optDCT(const std::vector<std::complex<float>>& data, std::vector<std::complex<float>>& destination)
 {
 	destination.resize(data.size());
 
@@ -92,7 +92,7 @@ void CDiscreteCosineTransform::optDCT(const std::vector<std::complex<float>> &da
 	destination[0] *= 1.0f / sqrtf(2);
 }
 
-void CDiscreteCosineTransform::optIDCT(const std::vector<std::complex<float>> &data, std::vector<std::complex<float>> &destination)
+void CDiscreteCosineTransform::optIDCT(const std::vector<std::complex<float>>& data, std::vector<std::complex<float>>& destination)
 {
 	destination.resize(data.size());
 

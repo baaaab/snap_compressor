@@ -4,12 +4,12 @@
 #include <cstring>
 
 CXZDecompress::CXZDecompress(FILE* fh) :
-	_dataSource(fh)
+		_dataSource(fh)
 {
 	_strm = LZMA_STREAM_INIT;
 
 	lzma_ret ret = lzma_stream_decoder(&_strm, 1e9, LZMA_TELL_UNSUPPORTED_CHECK);
-	switch(ret)
+	switch (ret)
 	{
 		case LZMA_OK:
 			break;
@@ -27,9 +27,9 @@ CXZDecompress::CXZDecompress(FILE* fh) :
 			throw 1;
 	}
 
-	_bufferSize = 1024*1024;
-	_inputBuffer = (uint8_t*)malloc(_bufferSize);
-	_outputBuffer = (uint8_t*)malloc(_bufferSize);
+	_bufferSize = 1024 * 1024;
+	_inputBuffer = (uint8_t*) malloc(_bufferSize);
+	_outputBuffer = (uint8_t*) malloc(_bufferSize);
 	_outputBufferReadPointer = _outputBuffer;
 
 	_strm.next_out = _outputBuffer;
@@ -45,7 +45,6 @@ CXZDecompress::~CXZDecompress()
 	free(_inputBuffer);
 	free(_outputBuffer);
 }
-
 
 uint32_t CXZDecompress::getNumDecompressedBytesAvailable() const
 {
@@ -64,13 +63,13 @@ size_t CXZDecompress::getOutputByteCount() const
 
 bool CXZDecompress::consumeBytes(char* data, uint32_t bytesToRead)
 {
-	while(getNumDecompressedBytesAvailable() < bytesToRead)
+	while (getNumDecompressedBytesAvailable() < bytesToRead)
 	{
 		resetOutputBuffer();
 
-		if(_strm.avail_in == 0)
+		if (_strm.avail_in == 0)
 		{
-			if(!readDataFromFile())
+			if (!readDataFromFile())
 			{
 				// no more data available
 				return false;
@@ -79,7 +78,7 @@ bool CXZDecompress::consumeBytes(char* data, uint32_t bytesToRead)
 
 		lzma_ret ret = lzma_code(&_strm, LZMA_RUN);
 
-		switch(ret)
+		switch (ret)
 		{
 			case LZMA_OK:
 //				fprintf(stderr, "LZMA OK\n");
@@ -113,7 +112,6 @@ bool CXZDecompress::consumeBytes(char* data, uint32_t bytesToRead)
 
 	return true;
 
-
 }
 
 void CXZDecompress::resetOutputBuffer()
@@ -132,12 +130,12 @@ bool CXZDecompress::readDataFromFile()
 	_strm.next_in = _inputBuffer;
 
 	int bytesRead = fread(_inputBuffer + _strm.avail_in, 1, _bufferSize - _strm.avail_in, _dataSource);
-	if(bytesRead > 0)
+	if (bytesRead > 0)
 	{
 		_strm.avail_in += bytesRead;
 	}
 
-	if(bytesRead <= 0)
+	if (bytesRead <= 0)
 	{
 		return false;
 	}
