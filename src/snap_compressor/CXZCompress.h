@@ -19,9 +19,13 @@ public:
 	float getRatio() const;
 
 private:
+	uint8_t* _inputBuffer;
+	uint32_t _inputBufferUsed;
 	uint8_t* _outputBuffer;
 	uint32_t _bufferSize;
 	lzma_stream _strm;
+
+	bool _isFinishing;
 };
 
 #endif /* SRC_SNAP_COMPRESSOR_CXZCOMPRESS_H_ */

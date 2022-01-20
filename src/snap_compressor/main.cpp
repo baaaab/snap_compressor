@@ -24,8 +24,8 @@ void usage(const char* argv0)
 {
 	fprintf(stderr, "Usage: %s encode snapshot.8t block_size quantisation_percent cut_off_freq_percent\n", argv0);
 	fprintf(stderr, "Usage: %s decode encoded.roundedQuantisedDCT decoded.8t\n", argv0);
-	fprintf(stderr, "\tquantisation_percent is a scaling factor applied to all DCT values, to help with future entropy encoding\n");
-	fprintf(stderr, "\tblock_size is the DCT size, larger values may give better compression, but operation is O(n^2)\n");
+	fprintf(stderr, "\tquantisation_percent (lossy) is a scaling factor applied to all DCT values, to help with entropy encoding\n");
+	fprintf(stderr, "\tblock_size (lossless ish) is the DCT size, larger values give better fractionally compression, but operation is O(n^2)\n");
 	fprintf(stderr, "\tcut_off_freq_percent can be used to filter high frequency components, specify the bandwidth percent to preserve\n");
 	exit(1);
 }
@@ -70,9 +70,6 @@ int main(int argc, char** argv)
 
 void encode(const char* inputFileName, uint32_t blockSize, float quantisationFactor, uint32_t binsToKeep)
 {
-
-	// todo: figure out non const values?
-	std::vector<float> quantisationVector(blockSize, quantisationFactor);
 
 	FILE* fh = fopen(inputFileName, "r");
 	if (!fh)
@@ -137,20 +134,20 @@ void encode(const char* inputFileName, uint32_t blockSize, float quantisationFac
 
 			for (uint32_t i = 0; i < blockSize; i++)
 			{
-				if(std::abs(transformed[i].real()) * quantisationVector[i] > 127)
+				if(std::abs(transformed[i].real()) * quantisationFactor > 127)
 				{
-					fprintf(stderr, "Overflow detected, set quantisation to: %f %%\n", quantisationFactor * 12700.0f / (quantisationVector[i] * std::abs(transformed[i].real())));
+					fprintf(stderr, "Overflow detected, set quantisation to: %f %%\n", quantisationFactor * 12700.0f / (quantisationFactor * std::abs(transformed[i].real())));
 				}
-				if(std::abs(transformed[i].imag()) * quantisationVector[i] > 127)
+				if(std::abs(transformed[i].imag()) * quantisationFactor > 127)
 				{
-					fprintf(stderr, "Overflow detected, set quantisation to: %f %%\n", quantisationFactor * 12700.0f / (quantisationVector[i] * std::abs(transformed[i].imag())));
+					fprintf(stderr, "Overflow detected, set quantisation to: %f %%\n", quantisationFactor * 12700.0f / (quantisationFactor * std::abs(transformed[i].imag())));
 				}
 
 				transformedRounded[i].real(roundf(transformed[i].real()));
 				transformedRounded[i].imag(roundf(transformed[i].imag()));
 
-				transformedRoundedQuantised[i].real(roundf(transformed[i].real() * quantisationVector[i]));
-				transformedRoundedQuantised[i].imag(roundf(transformed[i].imag() * quantisationVector[i]));
+				transformedRoundedQuantised[i].real(roundf(transformed[i].real() * quantisationFactor));
+				transformedRoundedQuantised[i].imag(roundf(transformed[i].imag() * quantisationFactor));
 			}
 
 			//fwrite(transformedRoundedQuantised.data(), 2, binsToKeep, roundedQuantisedDct);
@@ -259,6 +256,8 @@ void decode(const char* inputFileName, const char* outputFileName)
 		fprintf(stderr, "Read header successfully. Blocksize = %u, quantisation = %f, binsToKeep = %u\n", blockSize, quantisationFactor, binsToKeep);
 	}
 
+	const float iQuantisationFactor = 1.0f / quantisationFactor;
+
 	CXZDecompress decompressor(inputFh);
 	CDiscreteCosineTransform dct(blockSize);
 
@@ -279,7 +278,7 @@ void decode(const char* inputFileName, const char* outputFileName)
 			for (uint32_t i = 0; i < blockSize; i++)
 			{
 				floats[i] = bytes[i];
-				floats[i] /= quantisationFactor;
+				floats[i] *= iQuantisationFactor;
 			}
 
 			dct.optIDCT(floats, inverseTransformed);

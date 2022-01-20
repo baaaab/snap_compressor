@@ -211,7 +211,7 @@ void drawFft(CSdlDisplay* display, uint32_t xOffset, uint32_t yOffset, const std
 		magnitudes[i] /= numAverages;
 	}
 
-	float max = 5;//*std::max_element(magnitudes.begin(), magnitudes.end());
+	float max = 4.5f;//*std::max_element(magnitudes.begin(), magnitudes.end());
 	//printf("max: %f, numAverages = %u\n", max, numAverages);
 
 	uint32_t prevX = xOffset, prevY = yOffset + 128;

@@ -1,37 +1,49 @@
 #include "CDiscreteCosineTransform.h"
 
 CDiscreteCosineTransform::CDiscreteCosineTransform(uint32_t blockSize) :
-	_blockSize(blockSize),
-	_cosLookup(nullptr)
+		_blockSize(blockSize),
+		_cosLookup(nullptr),
+		_cosLookupInv(nullptr)
 {
-	const float scaledPi = M_PI / (float)blockSize;
+	const float scaledPi = M_PI / (float) blockSize;
 
 	// the cos lookup is the slowest part of this O(n^2) algorithm, so create a lookup table instead.
 	_cosLookup = new float*[_blockSize];
-	for(uint32_t a=0;a<blockSize;a++)
+	_cosLookupInv = new float*[_blockSize];
+
+	for (uint32_t a = 0; a < blockSize; a++)
 	{
 		_cosLookup[a] = new float[_blockSize];
-		for(uint32_t b=0;b<_blockSize;b++)
+		_cosLookupInv[a] = new float[_blockSize];
+	}
+
+	// generate same matrix with indices reversed for better cache locality in IDCT function, 30x speed up on my machine!
+	for (uint32_t a = 0; a < blockSize; a++)
+	{
+		for (uint32_t b = 0; b < _blockSize; b++)
 		{
 			_cosLookup[a][b] = cosf(scaledPi * (b + 0.5f) * a);
+			_cosLookupInv[b][a] = cosf(scaledPi * (b + 0.5f) * a);
 		}
 	}
 }
 
 CDiscreteCosineTransform::~CDiscreteCosineTransform()
 {
-	for(uint32_t i=0;i<_blockSize;i++)
+	for (uint32_t i = 0; i < _blockSize; i++)
 	{
 		delete[] _cosLookup[i];
+		delete[] _cosLookupInv[i];
 	}
 	delete[] _cosLookup;
+	delete[] _cosLookupInv;
 }
 
-void CDiscreteCosineTransform::DCT(const std::vector<std::complex<float>>& data, std::vector<std::complex<float>>& destination)
+void CDiscreteCosineTransform::DCT(const std::vector<std::complex<float>> &data, std::vector<std::complex<float>> &destination)
 {
 	destination.resize(data.size());
 
-	const float scaledPi = M_PI / (float)data.size();
+	const float scaledPi = M_PI / (float) data.size();
 
 	for (uint32_t a = 0; a < data.size(); a++)
 	{
@@ -45,11 +57,11 @@ void CDiscreteCosineTransform::DCT(const std::vector<std::complex<float>>& data,
 	destination[0] *= 1.0f / sqrtf(2);
 }
 
-void CDiscreteCosineTransform::IDCT(const std::vector<std::complex<float>>& data, std::vector<std::complex<float>>& destination)
+void CDiscreteCosineTransform::IDCT(const std::vector<std::complex<float>> &data, std::vector<std::complex<float>> &destination)
 {
 	destination.resize(data.size());
 
-	const float scaledPi = M_PI / (float)data.size();
+	const float scaledPi = M_PI / (float) data.size();
 
 	for (uint32_t a = 0; a < data.size(); a++)
 	{
@@ -62,7 +74,7 @@ void CDiscreteCosineTransform::IDCT(const std::vector<std::complex<float>>& data
 	}
 }
 
-void CDiscreteCosineTransform::optDCT(const std::vector<std::complex<float>>& data, std::vector<std::complex<float>>& destination)
+void CDiscreteCosineTransform::optDCT(const std::vector<std::complex<float>> &data, std::vector<std::complex<float>> &destination)
 {
 	destination.resize(data.size());
 
@@ -80,7 +92,7 @@ void CDiscreteCosineTransform::optDCT(const std::vector<std::complex<float>>& da
 	destination[0] *= 1.0f / sqrtf(2);
 }
 
-void CDiscreteCosineTransform::optIDCT(const std::vector<std::complex<float>>& data, std::vector<std::complex<float>>& destination)
+void CDiscreteCosineTransform::optIDCT(const std::vector<std::complex<float>> &data, std::vector<std::complex<float>> &destination)
 {
 	destination.resize(data.size());
 
@@ -91,7 +103,7 @@ void CDiscreteCosineTransform::optIDCT(const std::vector<std::complex<float>>& d
 		std::complex<float> sum = data[0] * 0.5f;
 		for (uint32_t b = 1; b < _blockSize; b++)
 		{
-			sum += data[b] * _cosLookup[b][a];
+			sum += data[b] * _cosLookupInv[a][b];
 		}
 		destination[a] = sum * scalingFactor;
 	}

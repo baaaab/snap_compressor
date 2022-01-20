@@ -19,6 +19,7 @@ public:
 private:
 	uint32_t _blockSize;
 	float** _cosLookup;
+	float** _cosLookupInv;
 };
 
 #endif /* SRC_MATHS_CDISCRETECOSINETRANSFORM_H_ */
